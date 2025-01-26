@@ -1,20 +1,21 @@
 #!/bin/bash
 
-# List of regions and corresponding AMI IDs
-declare -A region_image_map=(
-    ["us-east-1"]="ami-0e2c8caa4b6378d8c"
-    ["us-west-2"]="ami-05d38da78ce859165"
-    ["us-east-2"]="ami-0cb91c7de36eed2cb"
+# Khai báo thông tin vùng, AMI và các thông số khác
+declare -A AMI_IDS=(
+  ["us-east-1"]="ami-0dba2cb6798deb6d8"  # Ubuntu 20.04 LTS cho us-east-1
+  ["us-west-2"]="ami-08d4ac5b634553e16"  # Ubuntu 20.04 LTS cho us-west-2
+  ["us-east-2"]="ami-0aab355e0bfa1e7e9"  # Ubuntu 20.04 LTS cho us-east-2
 )
-
-# URL containing User Data on GitHub
-user_data_url="https://raw.githubusercontent.com/thines8899/vixmr1/refs/heads/main/vikucon"
 
 LAUNCH_TEMPLATE_NAME="MultiRegionSpotTemplate"
 INSTANCE_TYPE="c7a.2xlarge"
 KEY_NAME="my-key-pair"  # Thay bằng Key Pair của bạn
 SECURITY_GROUP_ID="sg-0123456789abcdef0"  # Thay bằng Security Group của bạn
 INSTANCE_COUNT=8
+
+# URL của user_data script
+USER_DATA_URL="https://raw.githubusercontent.com/thines8899/vixmr1/refs/heads/main/vikucon"
+USER_DATA=$(curl -s $USER_DATA_URL | base64)  # Tải script và mã hóa Base64
 
 # Lặp qua từng vùng để tạo Launch Template và khởi chạy instances
 for REGION in "${!AMI_IDS[@]}"; do
@@ -30,6 +31,7 @@ for REGION in "${!AMI_IDS[@]}"; do
         \"InstanceType\": \"$INSTANCE_TYPE\",
         \"KeyName\": \"$KEY_NAME\",
         \"SecurityGroupIds\": [\"$SECURITY_GROUP_ID\"],
+        \"UserData\": \"$USER_DATA\",
         \"InstanceMarketOptions\": {
             \"MarketType\": \"spot\"
         },
